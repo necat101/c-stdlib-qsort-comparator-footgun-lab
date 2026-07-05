@@ -1,0 +1,1295 @@
+{
+  "39264396": {
+    "by": "cpeterso",
+    "descendants": 121,
+    "id": 39264396,
+    "kids": [
+      39264933,
+      39265280,
+      39266480,
+      39264969,
+      39265290,
+      39267596,
+      39264885,
+      39265153,
+      39265400,
+      39267623,
+      39265146,
+      39265003,
+      39265619,
+      39266283,
+      39265299,
+      39265584,
+      39265151,
+      39265185,
+      39267450,
+      39266110,
+      39282789
+    ],
+    "score": 151,
+    "time": 1707156246,
+    "title": "Out-of-bounds read and write in the glibc's qsort()",
+    "type": "story",
+    "url": "https://www.openwall.com/lists/oss-security/2024/01/30/7"
+  },
+  "39264933": {
+    "by": "moyix",
+    "id": 39264933,
+    "kids": [
+      39265429,
+      39265949,
+      39265680
+    ],
+    "parent": 39264396,
+    "text": "It&#x27;s a bit debatable whether this is a security bug vs a &quot;you&#x27;re holding it wrong&quot; kind of bug, but fixing the bounds check is a good defensive practice and I&#x27;m glad they implemented it.<p>Somewhat tangentially, Microsoft at one point got in a bit of trouble for trying to use a randomized comparison function to implement shuffling on their &quot;Browser choice&quot; page:<p><a href=\"https:&#x2F;&#x2F;www.robweir.com&#x2F;blog&#x2F;2010&#x2F;02&#x2F;microsoft-random-browser-ballot.html\" rel=\"nofollow\">https:&#x2F;&#x2F;www.robweir.com&#x2F;blog&#x2F;2010&#x2F;02&#x2F;microsoft-random-browse...</a>",
+    "time": 1707158061,
+    "type": "comment"
+  },
+  "39265280": {
+    "by": "dang",
+    "id": 39265280,
+    "kids": [
+      39266243,
+      39267821
+    ],
+    "parent": 39264396,
+    "text": "Recent and related:<p><i>New Linux glibc flaw lets attackers get root on major distros</i> - <a href=\"https:&#x2F;&#x2F;news.ycombinator.com&#x2F;item?id=39250076\">https:&#x2F;&#x2F;news.ycombinator.com&#x2F;item?id=39250076</a> - Feb 2024 (93 comments)<p><i>Out-of-bounds read and write in glibc&#x27;s qsort()</i> - <a href=\"https:&#x2F;&#x2F;news.ycombinator.com&#x2F;item?id=39206029\">https:&#x2F;&#x2F;news.ycombinator.com&#x2F;item?id=39206029</a> - Jan 2024 (1 comment)<p><i>CVE-2023-6246: Heap-based buffer overflow in the glibc&#x27;s syslog()</i> - <a href=\"https:&#x2F;&#x2F;news.ycombinator.com&#x2F;item?id=39194093\">https:&#x2F;&#x2F;news.ycombinator.com&#x2F;item?id=39194093</a> - Jan 2024 (18 comments)<p><i>Safety vs. Performance. A case study of C, C++ and Rust sort implementations</i> - <a href=\"https:&#x2F;&#x2F;news.ycombinator.com&#x2F;item?id=37781612\">https:&#x2F;&#x2F;news.ycombinator.com&#x2F;item?id=37781612</a> - Oct 2023 (130 comments)",
+    "time": 1707159259,
+    "type": "comment"
+  },
+  "39266480": {
+    "by": "cmovq",
+    "id": 39266480,
+    "kids": [
+      39269010,
+      39268335
+    ],
+    "parent": 39264396,
+    "text": "I recently fixed some code that was doing the incorrect comparison with this alternative which avoids the overflow and is also branchless [1]:<p><pre><code>    return (a &gt; b) - (a &lt; b);\n</code></pre>\n[1]: <a href=\"https:&#x2F;&#x2F;godbolt.org&#x2F;z&#x2F;EnqsTr1jo\" rel=\"nofollow\">https:&#x2F;&#x2F;godbolt.org&#x2F;z&#x2F;EnqsTr1jo</a>",
+    "time": 1707164088,
+    "type": "comment"
+  },
+  "39264969": {
+    "by": "jandrese",
+    "id": 39264969,
+    "kids": [
+      39265519,
+      39266087,
+      39265284
+    ],
+    "parent": 39264396,
+    "text": "Intresting that the problem only occurs when using a buggy comparison function, but one of the most obvious comparison functions is buggy (a - b can suffer from integer overflow) so this vulnerability may very well exist in the wild.",
+    "time": 1707158165,
+    "type": "comment"
+  },
+  "39265290": {
+    "by": "skitter",
+    "id": 39265290,
+    "kids": [
+      39265378
+    ],
+    "parent": 39264396,
+    "text": "They already mention the issue of using substraction for comparison; here&#x27;s another different accidentally intransitive comparison function:<p><pre><code>    int cmp(const float *a, const float *b) {\n        if (*a &lt; *b) {\n            return 1;\n        } else if (*a == *b) {\n            return 0;\n        } else {\n            return -1;\n        }\n    }</code></pre>",
+    "time": 1707159293,
+    "type": "comment"
+  },
+  "39267596": {
+    "by": "foota",
+    "id": 39267596,
+    "kids": [
+      39267790
+    ],
+    "parent": 39264396,
+    "text": "This class of vulnerability was analysed in detail here: <a href=\"https:&#x2F;&#x2F;github.com&#x2F;Voultapher&#x2F;sort-research-rs&#x2F;blob&#x2F;main&#x2F;writeup&#x2F;sort_safety&#x2F;text.md\">https:&#x2F;&#x2F;github.com&#x2F;Voultapher&#x2F;sort-research-rs&#x2F;blob&#x2F;main&#x2F;wri...</a>. Discussion from the time at <a href=\"https:&#x2F;&#x2F;news.ycombinator.com&#x2F;item?id=37781612\">https:&#x2F;&#x2F;news.ycombinator.com&#x2F;item?id=37781612</a>",
+    "time": 1707169115,
+    "type": "comment"
+  },
+  "39264885": {
+    "by": "goalieca",
+    "id": 39264885,
+    "kids": [
+      39264988,
+      39265501,
+      39264989
+    ],
+    "parent": 39264396,
+    "text": "That\u2019s a pretty cool find. It just goes to show even some of the oldest and most widely used open source libraries still have security issues. This is a rare corner case but it\u2019s still a fantastic find. I suppose no static analysis tools found it over all those years.",
+    "time": 1707157915,
+    "type": "comment"
+  },
+  "39265153": {
+    "by": "kevincox",
+    "id": 39265153,
+    "kids": [
+      39266175
+    ],
+    "parent": 39264396,
+    "text": "There was a recent CppCon talk about changing the sort implementation in LLVM&#x27;s libc++. They talked about this is as one of the issues as well.<p><a href=\"https:&#x2F;&#x2F;www.youtube.com&#x2F;watch?v=cMRyQkrjEeI\" rel=\"nofollow\">https:&#x2F;&#x2F;www.youtube.com&#x2F;watch?v=cMRyQkrjEeI</a>",
+    "time": 1707158824,
+    "type": "comment"
+  },
+  "39265400": {
+    "by": "superjan",
+    "id": 39265400,
+    "parent": 39264396,
+    "text": "Bear in mind that comparing floating point NaNs is not transitive. IIRC, Rust considers floating point unsortable for that reason.",
+    "time": 1707159673,
+    "type": "comment"
+  },
+  "39267623": {
+    "by": "nuancebydefault",
+    "id": 39267623,
+    "kids": [
+      39267704
+    ],
+    "parent": 39264396,
+    "text": "I&#x27;m confused. You hand over an ill formed comparison function to qsort and it does not behave as expected. What did you expect?",
+    "time": 1707169246,
+    "type": "comment"
+  },
+  "39265146": {
+    "by": "madars",
+    "id": 39265146,
+    "kids": [
+      39265492
+    ],
+    "parent": 39264396,
+    "text": "Another place where non-transitive comparison frequently results in correctness errors&#x2F;crashes is balanced tree-based STL containers like std::set or std::map. It&#x27;s interesting to know whether those are similarly exploitable.",
+    "time": 1707158811,
+    "type": "comment"
+  },
+  "39265003": {
+    "by": "sgift",
+    "id": 39265003,
+    "kids": [
+      39265102,
+      39265123,
+      39267047,
+      39265246,
+      39265117
+    ],
+    "parent": 39264396,
+    "text": "I see the glibc security team fell back to a variant of the age old &quot;oh, but it&#x27;s undefined behavior, so if we burn down your computer that&#x27;s okay too!&quot; justification why they shouldn&#x27;t be assigned an CVE for this.<p>&gt; This memory corruption in the GNU C Library through the qsort function is\ninvoked by an application passing a non-transitive comparison function, which\nis undefined according to POSIX and ISO C standards.  As a result, we are of\nthe opinion that the resulting CVE, if any, should be assigned to any such\ncalling applications and subsequently fixed by passing a valid comparison\nfunction to qsort and not to glibc.<p>Disappointing. Not unexpected, but still disappointing. Oh well, at least they fixed it.",
+    "time": 1707158274,
+    "type": "comment"
+  },
+  "39265619": {
+    "by": "crotchfire",
+    "id": 39265619,
+    "kids": [
+      39265734
+    ],
+    "parent": 39264396,
+    "text": "Note that this can only be exploited if the program is <i>already</i> using a nontransitive comparision function, which is an egregious bug, <i>and</i> the program is setuid root.<p>The odds of a setuid root program having this particular, exotic flaw are miniscule.  None have been found in the wild.",
+    "time": 1707160518,
+    "type": "comment"
+  },
+  "39266283": {
+    "by": "mac3n",
+    "id": 39266283,
+    "kids": [
+      39267772
+    ],
+    "parent": 39264396,
+    "text": "Does that mean all programs which use qsort have &quot;Undefined Behavior&quot;\u2122?\nJust those which use nontransitive comparison functions?\nOnly those which encounter non-transitivity?",
+    "time": 1707163205,
+    "type": "comment"
+  },
+  "39265299": {
+    "by": "Scubabear68",
+    "id": 39265299,
+    "kids": [
+      39265399
+    ],
+    "parent": 39264396,
+    "text": "A bit of a non-event to me, this is a bug in user code. I don\u2019t see it much differently then freeing a block twice or using an uninitialized pointer. It\u2019s the price of using C.",
+    "time": 1707159339,
+    "type": "comment"
+  },
+  "39265584": {
+    "by": "up2isomorphism",
+    "id": 39265584,
+    "parent": 39264396,
+    "text": "Function pointer essentially is how functions gets passed how is a bug in the function a security issue? It is within the same security boundary.",
+    "time": 1707160369,
+    "type": "comment"
+  },
+  "39265151": {
+    "deleted": true,
+    "id": 39265151,
+    "parent": 39264396,
+    "time": 1707158821,
+    "type": "comment"
+  },
+  "39265185": {
+    "by": "kramerger",
+    "id": 39265185,
+    "kids": [
+      39267081
+    ],
+    "parent": 39264396,
+    "text": "But is this really exploitable?<p>And i had always thought networked services avoid using plain qsort due to risk of dos",
+    "time": 1707158940,
+    "type": "comment"
+  },
+  "39267450": {
+    "by": "nuc1e0n",
+    "id": 39267450,
+    "kids": [
+      39268917
+    ],
+    "parent": 39264396,
+    "text": "So glibc&#x27;s qsort doesn&#x27;t sort arrays of items when fed nonsense input? No kidding. Of course it won&#x27;t. But reading off the end of the array is concerning.<p>At a higher level, who&#x27;s misusing qsort in this way? I&#x27;d say PBCAK.",
+    "time": 1707168473,
+    "type": "comment"
+  },
+  "39266110": {
+    "by": "ComputerGuru",
+    "id": 39266110,
+    "kids": [
+      39266368
+    ],
+    "parent": 39264396,
+    "text": "&lt;removed incorrect comparison with std::sort()&gt;",
+    "time": 1707162525,
+    "type": "comment"
+  },
+  "39282789": {
+    "by": "jonathrg",
+    "id": 39282789,
+    "parent": 39264396,
+    "text": "I&#x27;m surprised that qsort can malloc.",
+    "time": 1707264628,
+    "type": "comment"
+  },
+  "39265429": {
+    "by": "dralley",
+    "id": 39265429,
+    "kids": [
+      39268516,
+      39267138,
+      39266130,
+      39267988
+    ],
+    "parent": 39264933,
+    "text": "Rust generally does consider &quot;you&#x27;re holding it wrong&quot; type bugs to be safety issues.  See for example [0], where the Rust developers filed a CVE for (and fixed) an issue in the standard library which the C &#x2F; C++ communities mostly considered a holding-it-wrong issue.<p>[0] <a href=\"https:&#x2F;&#x2F;www.reddit.com&#x2F;r&#x2F;cpp&#x2F;comments&#x2F;151cnlc&#x2F;a_safety_culture_and_c_we_need_to_talk_about&#x2F;\" rel=\"nofollow\">https:&#x2F;&#x2F;www.reddit.com&#x2F;r&#x2F;cpp&#x2F;comments&#x2F;151cnlc&#x2F;a_safety_cultu...</a>",
+    "time": 1707159753,
+    "type": "comment"
+  },
+  "39265949": {
+    "by": "tetha",
+    "id": 39265949,
+    "kids": [
+      39266441
+    ],
+    "parent": 39264933,
+    "text": "Mh, my main concern is: Both the weirdest absurd and non-exploitable things as well as the most trivially exploitable thing are just being run through all kinds of news channels as security vulnerabilities and out-of-bound writes and such. Like, &quot;complete bypass of redirect URI validation in keycloak OIDC&quot; vs &quot;memory corruption for qsort in glibc (if the application passes a bad comparision function (and you can trigger it))&quot;.<p>I&#x27;m finding myself very fatigued by this about vulnerabilities and find myself just giving up about trying to keep track. Also because there is no good curated source it feels. I can run after 3 nonsense ones a week and the one that can rip my systems apart drops on Christmas eve anyway.",
+    "time": 1707161865,
+    "type": "comment"
+  },
+  "39265680": {
+    "by": "BoppreH",
+    "id": 39265680,
+    "parent": 39264933,
+    "text": "I&#x27;m surprised that random comparison functions were not mentioned in the article. An awful idea, sure, but oh so tempting. Maybe everyone who tried it quickly saw the crashes...",
+    "time": 1707160747,
+    "type": "comment"
+  },
+  "39266243": {
+    "by": "LukeShu",
+    "id": 39266243,
+    "kids": [
+      39267572,
+      39267199
+    ],
+    "parent": 39265280,
+    "text": "This is unrelated to CVE-2023-6246 (which 2 of your links are about), other than that it piggy-backed on the embargo date.",
+    "time": 1707163073,
+    "type": "comment"
+  },
+  "39267821": {
+    "by": "Voultapher",
+    "id": 39267821,
+    "kids": [
+      39268778
+    ],
+    "parent": 39265280,
+    "text": "I would argue, <a href=\"https:&#x2F;&#x2F;news.ycombinator.com&#x2F;item?id=37781612\">https:&#x2F;&#x2F;news.ycombinator.com&#x2F;item?id=37781612</a> is also related. It explains that issue in detail and measures it in C++ standard library implementations.",
+    "time": 1707170313,
+    "type": "comment"
+  },
+  "39269010": {
+    "by": "moonchild",
+    "id": 39269010,
+    "parent": 39266480,
+    "text": "Hrm\u2014that&#x27;s another case of missing isel from gcc&#x2F;clang (c.f. &lt;<a href=\"https:&#x2F;&#x2F;pp.ipd.kit.edu&#x2F;firm&#x2F;selgen\" rel=\"nofollow\">https:&#x2F;&#x2F;pp.ipd.kit.edu&#x2F;firm&#x2F;selgen</a>&gt;)\u2014my implementation (&lt;<a href=\"https:&#x2F;&#x2F;github.com&#x2F;moon-chilled&#x2F;fancy-memcmp&#x2F;blob&#x2F;master&#x2F;memcmp-sse2.S#L82-L86\">https:&#x2F;&#x2F;github.com&#x2F;moon-chilled&#x2F;fancy-memcmp&#x2F;blob&#x2F;master&#x2F;mem...</a>&gt;) does it in one less instruction.  (An alternative is to skip the xors and do cmp&#x2F;setcc&#x2F;setcc&#x2F;sub&#x2F;movsx, which matches my approach on instruction count, but relies on good handling of partial renames, which is uarch-dependent.  And I can never remember if anybody can eliminate movsx.  Otoh it is non-destructive.)",
+    "time": 1707178186,
+    "type": "comment"
+  },
+  "39268335": {
+    "by": "kmoser",
+    "id": 39268335,
+    "kids": [
+      39269515,
+      39268394
+    ],
+    "parent": 39266480,
+    "text": "That&#x27;s clever, but I am not a fan: Booleans are implementation dependent; making the assumption that Boolean &#x27;true&#x27; evaluates to 1, or even a number greater than what Boolean &#x27;false&#x27; evaluates to, is not a good idea, even if it happens to be correct most of the time. Even if it is defined that way in the language specs, it might not be defined that way in a future version of that language or certainly not necessarily in other, simlar languages.<p>Now, if you&#x27;re exploiting that quirk for performance purposes, that&#x27;s another story. But then the code should be labeled as such.",
+    "time": 1707173533,
+    "type": "comment"
+  },
+  "39265519": {
+    "by": "adrian_b",
+    "id": 39265519,
+    "kids": [
+      39265808,
+      39268438
+    ],
+    "parent": 39264969,
+    "text": "They link there a posting that does not explain properly why such comparison functions are buggy: &quot;subtraction is not comparison&quot;.<p>In fact comparison is really just subtraction where the result is ignored, only the condition flags are updated in the same way as by any other subtraction.<p>The difference is elsewhere. In machine language, after either an integer subtraction or an integer comparison, the relationship between the operands is not tested by using the sign of the result.<p>It is tested instead by using the true sign of the result, which is computed by the addition modulo 2 (a.k.a. XOR) between the sign of the result and the overflow flag.<p>In the currently popular high-level programming languages it is no longer possible to access the overflow flag. (In many early programming languages there were available facilities like &quot;on overflow do ...&quot;.) Had this been possible, the qsort comparison function could have been implemented as a subtraction, with the result conditionally corrected in case of overflow.<p>Therefore in languages like C and derivatives one must always use the relational operators &quot;&gt;&quot;, &quot;&lt;&quot;, &quot;&gt;=&quot; and &quot;&lt;=&quot;, because these are implemented by the compiler using conditional instructions that test the true sign computed with the overflow flag, after the subtraction of the operands.",
+    "time": 1707160133,
+    "type": "comment"
+  },
+  "39266087": {
+    "by": "int_19h",
+    "id": 39266087,
+    "kids": [
+      39266153,
+      39266762,
+      39266741,
+      39266242
+    ],
+    "parent": 39264969,
+    "text": "It amazes me that with all the focus on memory safety, most PLs still don&#x27;t handle integer overflow sensibly by default: you either get guaranteed wraparound (which silently gives wrong values), or straight up undefined behavior as in C and C++. The latter won&#x27;t change at this point, of course, but why do new designs insist on following their lead? Safety should always be opt-out, not opt-in.<p>And sure, overflow checks aren&#x27;t free - but this is something that has been optimized in CPUs for decades.",
+    "time": 1707162372,
+    "type": "comment"
+  },
+  "39265284": {
+    "deleted": true,
+    "id": 39265284,
+    "parent": 39264969,
+    "time": 1707159279,
+    "type": "comment"
+  },
+  "39265378": {
+    "by": "jstimpfle",
+    "id": 39265378,
+    "kids": [
+      39265476,
+      39265490,
+      39265561,
+      39265500,
+      39267641
+    ],
+    "parent": 39265290,
+    "text": "Is it intransitive? Can you give a, b, c s.t. a &lt; b and b &lt; c, but not a &lt; c?",
+    "time": 1707159588,
+    "type": "comment"
+  },
+  "39267790": {
+    "by": "Voultapher",
+    "id": 39267790,
+    "parent": 39267596,
+    "text": "Indeed I think there is a valid discussion to be had, in terms of how far can we go with reasonable sacrifices. Also the analysis finds only a correlation between memory safety and expected user base. It doesn&#x27;t find any correlation between safety and performance, nor does it find one between safe or unsafe internal abstractions and memory safety for users.<p>Personally I believe, that blaming users for &quot;holding it wrong&quot; is not an effective way forwards. As a programming community we&#x27;ve tried that many times, and I&#x27;ve yet to see it succeed at scale.",
+    "time": 1707170180,
+    "type": "comment"
+  },
+  "39264988": {
+    "by": "charcircuit",
+    "id": 39264988,
+    "kids": [
+      39265064,
+      39268177
+    ],
+    "parent": 39264885,
+    "text": "It&#x27;s not new. They are just passing in an invalid parameter. If you pass random parameters into a function like memcpy it will do bad stuff too.<p>C APIs were not all designed to be safe to call and can commonly crash or introduce a vulnerability.",
+    "time": 1707158234,
+    "type": "comment"
+  },
+  "39265501": {
+    "by": "ericdfoley",
+    "id": 39265501,
+    "kids": [
+      39268901
+    ],
+    "parent": 39264885,
+    "text": "This has always been an issue with sorting float arrays that contain NaN in C or C++ (e.g. with std::sort() with the default &quot;&lt;&quot; comparator.)",
+    "time": 1707160043,
+    "type": "comment"
+  },
+  "39264989": {
+    "deleted": true,
+    "id": 39264989,
+    "parent": 39264885,
+    "time": 1707158235,
+    "type": "comment"
+  },
+  "39266175": {
+    "by": "orlp",
+    "id": 39266175,
+    "parent": 39265153,
+    "text": "I also mentioned it explicitly as a source of CVE&#x27;s two years ago in a talk I gave on pdqsort: <a href=\"https:&#x2F;&#x2F;youtu.be&#x2F;jz-PBiWwNjc?t=856\" rel=\"nofollow\">https:&#x2F;&#x2F;youtu.be&#x2F;jz-PBiWwNjc?t=856</a>",
+    "time": 1707162794,
+    "type": "comment"
+  },
+  "39267704": {
+    "by": "n_plus_1_acc",
+    "id": 39267704,
+    "kids": [
+      39267894
+    ],
+    "parent": 39267623,
+    "text": "I consider the use of undefined behaviour in trivially detectible cases like this a great mistake. Sure, undefined behaviour is useful for many Compiler optimizations, but requiring qsort implementations to not do out-of-bounds reads does not hurt.",
+    "time": 1707169681,
+    "type": "comment"
+  },
+  "39265492": {
+    "by": "CJefferson",
+    "id": 39265492,
+    "parent": 39265146,
+    "text": "They definitely are, similarly bad comparators in std::sort.",
+    "time": 1707160001,
+    "type": "comment"
+  },
+  "39265102": {
+    "by": "alphazard",
+    "id": 39265102,
+    "kids": [
+      39265231,
+      39265602
+    ],
+    "parent": 39265003,
+    "text": "Their assessment seems fair to me.  There are lots of reasons that software can be bad.  &quot;Easy to misuse&quot; is one of them.  Not the same thing as a vulnerability.<p>I&#x27;m sure there are some Rust devs who would say the same thing about C.  It&#x27;s possible to write secure code in C, just as it&#x27;s possible to write a sort with defined behavior using glibc.",
+    "time": 1707158665,
+    "type": "comment"
+  },
+  "39265123": {
+    "by": "gnfargbl",
+    "id": 39265123,
+    "parent": 39265003,
+    "text": "The glibc team could certainly have been a little less guarded, but I&#x27;m not sure they were <i>wrong</i>. If CVEs are to be something other than a stamp collection, then they need to facilitate remediation. To do that, CVEs need to identify vulnerabilities specifically and not just in general.<p>For example, it wouldn&#x27;t be useful to assign a CVE to the concept of SQLi, but it can be useful to assign CVEs to particular products exhibiting SQLi vulnerabilities. This fault isn&#x27;t quite as general as that, but the argument for non-CVE-assignment goes along the same lines.",
+    "time": 1707158744,
+    "type": "comment"
+  },
+  "39267047": {
+    "by": "jacquesm",
+    "id": 39267047,
+    "kids": [
+      39268193
+    ],
+    "parent": 39265003,
+    "text": "CVE&#x27;s aren&#x27;t free.<p>The aftermath of issuing a CVE for this bug would have massive consequences all over the industry, fixing the bug and leaving the past - where you probably would have become aware of this by now if it affected you and you probably should have a look at your code regardless to see if the situation can occur - means that on the next scheduled update of glibc everybody will have the fix. If you have a way of getting this to escalate to RCE or some other nastiness, especially if it can be done remotely in some application that is networked and that uses qsort (which should be most of them so if it is that easy then it should be quick to prove).<p>Note that even something as mundane as the UTF-8 encoding scheme led to an exploit so it may well be possible. But I think classifying this as a security bug rather than just as a bug at this point is premature.<p>Consider being on the receiving side of a mandatory (for instance: regulated industry) upgrade requirement of all of your systems because a CVE was issued would carry substantial costs even if the risk of those systems being exploited was very small. So the glibc team likely took such costs into account and absent an easy or obvious way to exploit this that seems for the moment to be the right call. But it could change.",
+    "time": 1707166609,
+    "type": "comment"
+  },
+  "39265246": {
+    "by": "CJefferson",
+    "id": 39265246,
+    "parent": 39265003,
+    "text": "Gcc&#x27;s std::sort has always had this &quot;bug&quot; for bad comparators, doing &quot;x &lt;= y&quot; instead of &quot;x &lt; y&quot; is enough to cause out of bounds read and writes. This isn&#x27;t fixed because it&#x27;s undefined behaviour.",
+    "time": 1707159160,
+    "type": "comment"
+  },
+  "39265117": {
+    "by": "voakbasda",
+    "id": 39265117,
+    "kids": [
+      39265201,
+      39265349
+    ],
+    "parent": 39265003,
+    "text": "If the person using a foot gun shoots off their toe, do we blame the foot gun manufacturer?<p>No, we blame the person that did not take proper training or exercise sufficient caution when using their tool.",
+    "time": 1707158725,
+    "type": "comment"
+  },
+  "39265734": {
+    "by": "PoignardAzur",
+    "id": 39265734,
+    "kids": [
+      39270941
+    ],
+    "parent": 39265619,
+    "text": "&gt; <i>Note that this can only be exploited if the program is already using a nontransitive comparision function, which is an egregious bug</i><p>The example they give is &quot;a function cmp(int a, int b) that returns (a - b)&quot;, which is definitely a comparison function I&#x27;ve seen before. It&#x27;s wrong because of overflow, but it&#x27;s not <i>egregiously</i> wrong.<p>I think it&#x27;s more significant than you&#x27;re implying. I wouldn&#x27;t be surprised if it were used as a step in an exploit chain somewhere in the wild.",
+    "time": 1707160984,
+    "type": "comment"
+  },
+  "39267772": {
+    "by": "o11c",
+    "id": 39267772,
+    "parent": 39266283,
+    "text": "Programs that use subtraction to implement comparisons have two different kinds of UB - the integer overflow, and the invalid argument (nontransitive function) to qsort.<p>It&#x27;s possible to implement a nontransitive function without the first UB though.<p>Note however that the UB only actually happens if the dynamically-passed values are more than INT_MAX apart. So e.g. if the values are never negative in practice, or limited to a small maximum, there is no UB.",
+    "time": 1707170050,
+    "type": "comment"
+  },
+  "39265399": {
+    "by": "NotYourLawyer",
+    "id": 39265399,
+    "parent": 39265299,
+    "text": "It\u2019s a footgun for sure though, since the \u201cobvious\u201d comparison function of subtracting arguments is intransitive with integer overflow.",
+    "time": 1707159669,
+    "type": "comment"
+  },
+  "39267081": {
+    "by": "jacquesm",
+    "id": 39267081,
+    "parent": 39265185,
+    "text": "That&#x27;s the big question, it may well be. But I don&#x27;t immediately see how though there are probably enough applications out there using quicksort that <i>some</i> of them may end up being exploitable. But it would take an interesting set of circumstances to bring that about.",
+    "time": 1707166748,
+    "type": "comment"
+  },
+  "39268917": {
+    "by": "vitiral",
+    "id": 39268917,
+    "kids": [
+      39273193
+    ],
+    "parent": 39267450,
+    "text": "&gt; So glibc&#x27;s qsort doesn&#x27;t sort arrays of items when fed nonsense input? No kidding.<p>Not only will it not sort them... it will lead to OOB memory accesses by qsort itself",
+    "time": 1707177617,
+    "type": "comment"
+  },
+  "39266368": {
+    "by": "ack_complete",
+    "id": 39266368,
+    "kids": [
+      39267957,
+      39266458
+    ],
+    "parent": 39266110,
+    "text": "The situation is not any different for std::sort, which also requires that the supplied comparison operator be well-behaved and can also fail in the same way otherwise.<p><a href=\"https:&#x2F;&#x2F;gcc.gnu.org&#x2F;bugzilla&#x2F;show_bug.cgi?id=41448\" rel=\"nofollow\">https:&#x2F;&#x2F;gcc.gnu.org&#x2F;bugzilla&#x2F;show_bug.cgi?id=41448</a>",
+    "time": 1707163538,
+    "type": "comment"
+  },
+  "39268516": {
+    "by": "tialaramex",
+    "id": 39268516,
+    "parent": 39265429,
+    "text": "In particular, most traits you&#x27;ve seen for Rust, such as PartialEq, or here Ord (a claim that our type is totally ordered) are <i>safe</i> traits, this means you don&#x27;t need to utter the unsafe keyword to implement these traits, and so even though Rust clearly documents the traits as having specific requirements in fact it promises it won&#x27;t actually cause UB if you ignore them, and the <i>users</i> of that trait must behave accordingly.<p>My misfortunate crate <a href=\"https:&#x2F;&#x2F;crates.io&#x2F;crates&#x2F;misfortunate\" rel=\"nofollow\">https:&#x2F;&#x2F;crates.io&#x2F;crates&#x2F;misfortunate</a> is a library of types that just deliberately implement various traits &quot;wrongly&quot; in order that you can play with the consequences.<p>For example Clone promises to uh, clone things, but Rust can&#x27;t know if this Doodad is really a &quot;clone&quot; of that Doodad, only that the result was really the correct type, so if your type only implements Default my Multiplicity type wrapper will cheerfully claim it can be cloned anyway, cloning the wrapper doesn&#x27;t get you a &quot;real&quot; clone but only your Default - the types look correct but what&#x27;s inside is not a &quot;clone&quot; in any reasonable sense.<p>Rust does <i>have</i> what it calls unsafe traits, traits which you cannot implement without writing the &quot;unsafe&quot; keyword. They are solemn promises that you did what the documentation told you to, if you messed up in writing the unsafe trait then the resulting software may have Undefined Behaviour.<p>For example, my type wrapper Comte (named after the guy who invented the trick with a hat you&#x27;ve seen magicians do) claims to be an ExactSizeIterator. If it has one rabbit inside it, duh, exact size. Nope, it&#x27;s a trick, we can just tap the Comte with our wand and produce an unlimited number of rabbits despite claiming to be an ExactSizeIterator, that&#x27;s a <i>bad idea</i> but it&#x27;s not Undefined Behaviour.<p>On the other hand Rust has the unsafe TrustedLen, which also says we can trust this iterator knows exactly how big it is, <i>but</i> because it&#x27;s unsafe that&#x27;s a solemn promise, if we took the Comte code but claimed to implement TrustedLen we&#x27;re just despicable liars.",
+    "time": 1707174749,
+    "type": "comment"
+  },
+  "39267138": {
+    "by": "jacquesm",
+    "id": 39267138,
+    "kids": [
+      39267519
+    ],
+    "parent": 39265429,
+    "text": "But: they <i>are</i> holding it wrong <i>and</i> it got fixed regardless because if you can fix such stuff you should. For Rust such a CVE is nearly free given the installed base of Rust and the fact that most of that code is fresh and in maintenance. But that definitely isn&#x27;t true for all of the instances of glibc that are currently deployed.",
+    "time": 1707166988,
+    "type": "comment"
+  },
+  "39266130": {
+    "by": "bregma",
+    "id": 39266130,
+    "kids": [
+      39267132
+    ],
+    "parent": 39265429,
+    "text": "A you&#x27;re-holding-it-wrong that still got fixed in all the major C++ standard library implementations.",
+    "time": 1707162611,
+    "type": "comment"
+  },
+  "39267988": {
+    "by": "cozzyd",
+    "id": 39267988,
+    "kids": [
+      39270864
+    ],
+    "parent": 39265429,
+    "text": "Is calling free with the wrong address a safety issue or &quot;you&#x27;re holding it wrong.&quot;",
+    "time": 1707171252,
+    "type": "comment"
+  },
+  "39266441": {
+    "by": "moyix",
+    "id": 39266441,
+    "kids": [
+      39266997
+    ],
+    "parent": 39265949,
+    "text": "In theory this is what CVSS scores were supposed to fix, but a lot of the &quot;does this vulnerability really matter&quot; evaluation ultimately depends on the details of your environment and application :(",
+    "time": 1707163879,
+    "type": "comment"
+  },
+  "39267572": {
+    "by": "nuc1e0n",
+    "id": 39267572,
+    "parent": 39266243,
+    "text": "Not entirely. It appears glibc as a whole is being security audited at present and these CVEs are visible symptoms of the process.<p>Have the auditors tried looking at musl libc? It seems a lot less convoluted from what I&#x27;ve seen so may be an easier thing to validate.",
+    "time": 1707169011,
+    "type": "comment"
+  },
+  "39267199": {
+    "by": "dang",
+    "id": 39267199,
+    "parent": 39266243,
+    "text": "Thanks! I guess they&#x27;re related at the glibc level and not at the CVE level.",
+    "time": 1707167298,
+    "type": "comment"
+  },
+  "39268778": {
+    "by": "dang",
+    "id": 39268778,
+    "parent": 39267821,
+    "text": "Ok, thanks! Added above.",
+    "time": 1707176696,
+    "type": "comment"
+  },
+  "39269515": {
+    "by": "AgentME",
+    "id": 39269515,
+    "kids": [
+      39270039
+    ],
+    "parent": 39268335,
+    "text": "The comparison operators are specifically defined in the C standard to output 1 if true and 0 if false.",
+    "time": 1707181998,
+    "type": "comment"
+  },
+  "39268394": {
+    "deleted": true,
+    "id": 39268394,
+    "parent": 39268335,
+    "time": 1707173963,
+    "type": "comment"
+  },
+  "39265808": {
+    "by": "hedora",
+    "id": 39265808,
+    "kids": [
+      39265982,
+      39265833
+    ],
+    "parent": 39265519,
+    "text": "Rust has a checked_add function for this purpose.<p>Also, by default, Rust&#x27;s integer operations trap on overflow, so if you wrote the obvious comparator (x-y) the program would panic instead of exhibiting undefined behavior.",
+    "time": 1707161304,
+    "type": "comment"
+  },
+  "39268438": {
+    "deleted": true,
+    "id": 39268438,
+    "parent": 39265519,
+    "time": 1707174226,
+    "type": "comment"
+  },
+  "39266153": {
+    "by": "trealira",
+    "id": 39266153,
+    "kids": [
+      39267155
+    ],
+    "parent": 39266087,
+    "text": "Graydon Hoare originally wanted integers to be promoted to bignums on overflow, but that didn&#x27;t happen.<p><a href=\"https:&#x2F;&#x2F;graydon2.dreamwidth.org&#x2F;307291.html\" rel=\"nofollow\">https:&#x2F;&#x2F;graydon2.dreamwidth.org&#x2F;307291.html</a>",
+    "time": 1707162709,
+    "type": "comment"
+  },
+  "39266762": {
+    "by": "ajdude",
+    "id": 39266762,
+    "kids": [
+      39267920,
+      39268554,
+      39267520
+    ],
+    "parent": 39266087,
+    "text": "When reading this headline, my very first thought was &quot;we wouldn&#x27;t have this problem if more people used Ada&quot; for that very reason.<p>I don&#x27;t even think Rust can do something like<p><pre><code>   type Element is Integer range 100 .. 1000;</code></pre>",
+    "time": 1707165253,
+    "type": "comment"
+  },
+  "39266741": {
+    "by": "adrian_b",
+    "id": 39266741,
+    "kids": [
+      39278896,
+      39268063
+    ],
+    "parent": 39266087,
+    "text": "The guaranteed wraparound of &quot;unsigned&quot; types in C and derivatives is not very helpful.<p>While the &quot;signed&quot; types in C are well defined kinds of integers, which nonetheless have unpredictable behavior on overflow, the &quot;unsigned&quot; types are ambiguous, because they correspond to 4 different primitive types (each of these 4 being available in various sizes, i.e. 1-bit, 8-bit, 16-bit, 32-bit, 64-bit or 128-bit).<p>By primitive types I mean types for which the modern CPUs implement distinct dedicated hardware instructions. The 4 types are non-negative integers, integer residues (a.k.a. modular numbers), binary polynomials and Galois-field binary polynomials.<p>The same operation, e.g. multiplication, is implemented with different algorithms for each of these 4 types.<p>Moreover, while a 64-bit &quot;unsigned&quot; may be interpreted as a 64-bit non-negative integer or a residue modulo 2^64 or a 64-bit binary polynomial or a value in GF(2^64), there are 2 additional interpretations between which there are subtle differences, as a 64-element array of 1-bit non-negative integers or as a 64-element array of residues modulo-2. The failure to be aware of the differences between the operations that can be performed with these 6 types and using a single name for all can easily lead to bugs.<p>The wraparound is correct for integer residues modulo 2^N, but it is wrong for non-negative integers, which are more frequent in most applications.<p>Also the implicit conversions of unsigned types are very bad in C and derivatives. They are some times correct for non-negative integers, but they are  always wrong for integer residues. While a small-size non-negative integer may be converted without losses to a bigger size, for integer residues the reverse is true, they can be converted correctly only towards smaller sizes.<p>Therefore, the unsigned types of C are defined wrongly both when interpreted as non-negative integers and when interpreted as integer residues. Most other languages are not better.<p>While there are many applications where either non-negative integers, integer residues, binary polynomials or Galois-field binary polynomials are needed, so unsigned C types must be used for lack of a better alternative, the use of &quot;unsigned&quot; types requires extra care in comparison with using the signed types (e.g. all implicit conversions must be avoided) and it must be clearly documented what kind of &quot;unsigned&quot; is really meant (preferably by defining dedicated types for the various possible interpretations; in C++ it is possible to also define correct operations with them, replacing the built-in operators with undesirable behavior).",
+    "time": 1707165158,
+    "type": "comment"
+  },
+  "39266242": {
+    "by": "avgcorrection",
+    "id": 39266242,
+    "kids": [
+      39266514
+    ],
+    "parent": 39266087,
+    "text": "There\u2019s also Rust\u2019s half-measure of overflow in release mode, panic in debug mode.",
+    "time": 1707163072,
+    "type": "comment"
+  },
+  "39265476": {
+    "by": "rrauenza",
+    "id": 39265476,
+    "parent": 39265378,
+    "text": "Maybe inf or nan?<p><a href=\"https:&#x2F;&#x2F;stackoverflow.com&#x2F;a&#x2F;42723797&#x2F;2077386\" rel=\"nofollow\">https:&#x2F;&#x2F;stackoverflow.com&#x2F;a&#x2F;42723797&#x2F;2077386</a>",
+    "time": 1707159924,
+    "type": "comment"
+  },
+  "39265490": {
+    "by": "scythe",
+    "id": 39265490,
+    "kids": [
+      39266054
+    ],
+    "parent": 39265378,
+    "text": "Trivially, NaN != NaN, so this function is not even properly reflexive (i.e. for a = b = NaN we find cmp(&amp;a,&amp;b) = cmp(&amp;b,&amp;a) = 1).",
+    "time": 1707159998,
+    "type": "comment"
+  },
+  "39265561": {
+    "by": "rightbyte",
+    "id": 39265561,
+    "parent": 39265378,
+    "text": "No, but you need a nan check in the above code. And a negative zero check if you are picky for sorting maybe.",
+    "time": 1707160303,
+    "type": "comment"
+  },
+  "39265500": {
+    "by": "ufo",
+    "id": 39265500,
+    "parent": 39265378,
+    "text": "Maybe theyre talking about NaN?Comparing against NaN return false. That doesn&#x27;t violate transitivity, but it can confuse many sorting algorithms.",
+    "time": 1707160038,
+    "type": "comment"
+  },
+  "39267641": {
+    "deleted": true,
+    "id": 39267641,
+    "parent": 39265378,
+    "time": 1707169332,
+    "type": "comment"
+  },
+  "39265064": {
+    "by": "jhallenworld",
+    "id": 39265064,
+    "kids": [
+      39265156,
+      39275995
+    ],
+    "parent": 39264988,
+    "text": "I can imagine the future memcpy CVE: &quot;arguments to memcpy to regions not previously allocated or after having been freed can potentially cause security issues.  Therefore we propose that memcpy check its arguments against this new list of valid memory addresses that we are now going to keep around...&quot;<p>So what I mean is: how much performance are we giving up with this &quot;fix&quot; for qsort?",
+    "time": 1707158491,
+    "type": "comment"
+  },
+  "39268177": {
+    "by": "MathMonkeyMan",
+    "id": 39268177,
+    "parent": 39264988,
+    "text": "I&#x27;ve seen a few programs that misbehave due to a comparison function that doesn&#x27;t have all of the necessary properties.<p>Maybe what&#x27;s notable from a security perspective is that here&#x27;s a contract about the behavior of an algorithm (comparison function) as opposed to the value of an argument (null pointer, negative, bigger than N, etc.).<p>Still qualifies as passing an invalid parameter.",
+    "time": 1707172498,
+    "type": "comment"
+  },
+  "39268901": {
+    "by": "vitiral",
+    "id": 39268901,
+    "kids": [
+      39268921
+    ],
+    "parent": 39265501,
+    "text": "what has been? OOB errors?",
+    "time": 1707177497,
+    "type": "comment"
+  },
+  "39267894": {
+    "by": "mjevans",
+    "id": 39267894,
+    "parent": 39267704,
+    "text": "IMO Optimizations like that should be at least a __warning__ and ideally lead to refactored and more correct code as a result.<p>Also IMO, the default should always be unsigned (modulus) integers, not signed.  That would promote more correct consideration of integer types and operations.  Yes, the ship has sailed on that, but it would also be nice if code linters added &#x27;signed &#x27; where not specified to remind everyone of the present default.",
+    "time": 1707170712,
+    "type": "comment"
+  },
+  "39265231": {
+    "by": "sgift",
+    "id": 39265231,
+    "kids": [
+      39265917
+    ],
+    "parent": 39265102,
+    "text": "The reason I&#x27;d say assigning a CVE is the right call is that the &quot;easy to misuse&quot; leads to a potential security problem here because of the way glibc handles the function that you give it.<p>Case in point: You can make the same error in Java (I think it&#x27;s even included in the docs for Comparators that you shouldn&#x27;t do a-b, because of integer overflow&#x2F;underflow), but it cannot lead to an out-of-bounds read&#x2F;write. And that&#x27;s because Java (~glibc) handles the comparison function that you give it differently.",
+    "time": 1707159109,
+    "type": "comment"
+  },
+  "39265602": {
+    "by": "skitter",
+    "id": 39265602,
+    "kids": [
+      39266244
+    ],
+    "parent": 39265102,
+    "text": "I don&#x27;t think it&#x27;s undefined behavior though. Looking at (the working draft of) the C ISO standard, I don&#x27;t see a requirement that the comparison function must be transitive.<p>The closes thing there is 7.22.5.2 \u00a74: &quot;If two elements compare as equal, their order in the resulting sorted array is unspecified&quot;<p>So I&#x27;d say blaming users for a bug in glibc isn&#x27;t fair.",
+    "time": 1707160454,
+    "type": "comment"
+  },
+  "39268193": {
+    "by": "n_plus_1_acc",
+    "id": 39268193,
+    "parent": 39267047,
+    "text": "Requiring no CVE is obviously a proxy for no vulnerabilities, and it&#x27;s as close as you can get. I think if you are in an industry that values this, the correct thing to do is check if you use qsort and check your comparision functions. Now. To encourage this, it would be good thing for glibc to issue a CVE.",
+    "time": 1707172623,
+    "type": "comment"
+  },
+  "39265201": {
+    "by": "xboxnolifes",
+    "id": 39265201,
+    "kids": [
+      39265402,
+      39265380
+    ],
+    "parent": 39265117,
+    "text": "We very frequently blame footgun manufacturers for manufacturing footguns.",
+    "time": 1707158983,
+    "type": "comment"
+  },
+  "39265349": {
+    "deleted": true,
+    "id": 39265349,
+    "parent": 39265117,
+    "time": 1707159505,
+    "type": "comment"
+  },
+  "39270941": {
+    "by": "crotchfire",
+    "id": 39270941,
+    "parent": 39265734,
+    "text": "<i>which is definitely a comparison function I&#x27;ve seen before.</i><p>In which setuid-root program?",
+    "time": 1707195314,
+    "type": "comment"
+  },
+  "39273193": {
+    "by": "nuc1e0n",
+    "id": 39273193,
+    "parent": 39268917,
+    "text": "Yeah, I agree that&#x27;s a bug and it&#x27;s good to have a fix for it.",
+    "time": 1707219380,
+    "type": "comment"
+  },
+  "39267957": {
+    "by": "microtherion",
+    "id": 39267957,
+    "parent": 39266368,
+    "text": "In fact if an implementation of std::sort has this bug, it&#x27;s worse, because a fix in a template function requires recompiling all clients to go into effect, while qsort can be fixed in one shared library.",
+    "time": 1707171089,
+    "type": "comment"
+  },
+  "39266458": {
+    "by": "ComputerGuru",
+    "id": 39266458,
+    "parent": 39266368,
+    "text": "Never mind, you&#x27;re right of course. I blanked for a moment there and completely forgot that you just need to use `std::stable_sort()` for non-deterministic comparison routines.",
+    "time": 1707163964,
+    "type": "comment"
+  },
+  "39267519": {
+    "by": "megous",
+    "id": 39267519,
+    "kids": [
+      39268343
+    ],
+    "parent": 39267138,
+    "text": "Well, a fix in glibc fixed it across the whole system and for all already compiled programs.<p>Can you say the same for Rust?",
+    "time": 1707168772,
+    "type": "comment"
+  },
+  "39267132": {
+    "by": "pests",
+    "id": 39267132,
+    "kids": [
+      39275121
+    ],
+    "parent": 39266130,
+    "text": "Fixed?",
+    "time": 1707166965,
+    "type": "comment"
+  },
+  "39270864": {
+    "by": "dureuill",
+    "id": 39270864,
+    "parent": 39267988,
+    "text": "It is both.<p>&quot;Memory safe&quot; means that if the user is &quot;holding it wrong&quot;, it won&#x27;t cause a memory error.<p>In safe Rust, it is impossible to call free with the wrong address (simply by virtue of the `free` equivalent being unsafe, and with the pervasive use of smart pointers to make it practical to stay in safe land).<p>Similarly even if you &quot;hold it wrong&quot; and use a wrong comparison function in Rust&#x27;s sort, you might get nonsensical results, but no memory errors.<p>That&#x27;s precisely what safety means in this context",
+    "time": 1707194397,
+    "type": "comment"
+  },
+  "39266997": {
+    "by": "tetha",
+    "id": 39266997,
+    "kids": [
+      39267910
+    ],
+    "parent": 39266441,
+    "text": "I have also found CVSS scores to over- or underestimate the impact of vulnerabilities so much.. I might as well flip a coin. And while I probably should be informed more, I really consider that a problem in the output of the security community.<p>For example, the keycloak OIDC vulnerability would&#x27;ve allowed me to compromise any account of our internal authentication with ~1 bad click from a user, possibly fewer. Working that out to a point it was terrifying to all internal users took like 30 minutes at most and most time was wasted on realizing their version constraints for the exploit are wrong. That&#x27;s a 7.8.<p>But then you have &quot;Oh curl with high parameters can hang&quot; and &quot;Oh if you reload postgres many times a second it stops working&quot; coming in at 9+. Like sure, a user with elevated privileges on a critical server sending signals to postgres causing a postgres DoS is my biggest issue at that point.<p>So I either have to evaluate everything for myself, or .. no idea.",
+    "time": 1707166343,
+    "type": "comment"
+  },
+  "39270039": {
+    "by": "viraptor",
+    "id": 39270039,
+    "parent": 39269515,
+    "text": "I was curious about the details. 6.5.8 in <a href=\"https:&#x2F;&#x2F;www.open-std.org&#x2F;jtc1&#x2F;sc22&#x2F;wg14&#x2F;www&#x2F;docs&#x2F;n1548.pdf\" rel=\"nofollow\">https:&#x2F;&#x2F;www.open-std.org&#x2F;jtc1&#x2F;sc22&#x2F;wg14&#x2F;www&#x2F;docs&#x2F;n1548.pdf</a><p>Also 7.18 makes the bool macros explicitly 1 and 0.",
+    "time": 1707186540,
+    "type": "comment"
+  },
+  "39265982": {
+    "by": "Arnavion",
+    "id": 39265982,
+    "parent": 39265808,
+    "text": "For this specific case, saturating_sub would work fine. The checked_sub way would need an additional `.unwrap_or(-1)`<p>Though of course you wouldn&#x27;t need to do either because the usual way to write a Rust API that takes comparators is for that comparator to return std::cmp::Ordering, not a signed integer.<p>And if you do make a PartialOrd &#x2F; Ord impl that isn&#x27;t transitive, it is guaranteed by the sorting fns in libstd that sorting may be incorrect, but it won&#x27;t be undefined behavior.",
+    "time": 1707161993,
+    "type": "comment"
+  },
+  "39265833": {
+    "by": "adrian_b",
+    "id": 39265833,
+    "kids": [
+      39266948
+    ],
+    "parent": 39265808,
+    "text": "By default, i.e. in release builds, Rust&#x27;s integer operations do not trap on overflow.<p>I do not consider that the behavior of a debug build can be considered as &quot;default&quot;.<p>I consider the disabling of the overflow traps a very bad practice, which is justified only for specific functions or code sequences that have been analyzed carefully to prove that overflows are impossible.<p>For example, the chain of exploits that have been used to gain complete remote control of any iPhone without detection during many years has included some that were based on integer overflows in the Apple system software.",
+    "time": 1707161442,
+    "type": "comment"
+  },
+  "39267155": {
+    "by": "jacquesm",
+    "id": 39267155,
+    "kids": [
+      39267684
+    ],
+    "parent": 39266153,
+    "text": "That&#x27;s really the only proper solution for this problem.",
+    "time": 1707167067,
+    "type": "comment"
+  },
+  "39267920": {
+    "by": "tialaramex",
+    "id": 39267920,
+    "parent": 39266762,
+    "text": "That&#x27;s correct, Rust does not have this, in principle Pattern Types (a possible future Rust feature) could do this, but you probably wouldn&#x27;t use them for this purpose.<p>WUFFS can do this, it calls such types &quot;refined&quot; types - and indeed WUFFS can also do:<p><pre><code>  assert n_bits &lt; 12 via &quot;a &lt; b: a &lt; c; c &lt;= b&quot;(c: width)\n</code></pre>\nWhat that&#x27;s saying is &quot;As the programmer I say on this line n_bits is strictly less than 12, and I claim you can prove that based on knowing the value of width, and here&#x27;s why&quot;<p>WUFFS doesn&#x27;t know how to create such a proof, it&#x27;s in quotes because WUFFS has a list of proofs a human gave it, baked in, and just accepts any of those proofs, after all a human mathematician assured it these are true. But it can <i>check</i> the rest of your assertion given this proof, and if that fails your software doesn&#x27;t compile.<p>WUFFS requires that it can see why everything you&#x27;re doing is OK, whether that&#x27;s indexing into an array (if you write dogs[k] where dogs is an array of 16 dogs, WUFFS needs to be certain that k is strictly in the range from zero to fifteen inclusive, or the program won&#x27;t compile) or arithmetic (if bits is supposed to be an integer between one and thirty two inclusive then we can&#x27;t very well do bits = k * 2 can we, because k might be <i>zero</i>)<p>As a result WUFFS gets to be entirely safe. As a side effect (and also with the help of some clever SIMD friendly language design choices) WUFFS gets to go very, very fast. And all for the very affordable price of abandoning generality. The next Doom, Excel, Apache and Linux cannot be written in WUFFS. But the question is why your thumbnail making code, or your file compressor is written in anything else.",
+    "time": 1707170845,
+    "type": "comment"
+  },
+  "39268554": {
+    "by": "koito17",
+    "id": 39268554,
+    "kids": [
+      39269063
+    ],
+    "parent": 39266762,
+    "text": "Depending on what you allow in predicate types, you end up making type inference (and&#x2F;or type checking) an undecidable problem.<p>In Common Lisp, you can write<p><pre><code>  (deftype element () `(integer 100 1000))\n</code></pre>\nand in this case, a &quot;smart&quot; compiler like SBCL will be able to infer the bounds of (the element x), but for more complex predicates, like<p><pre><code>  (deftype even-element () \n    `(and (integer 100 1000)\n          (satisfies evenp)))\n</code></pre>\nI highly doubt there is a single CL compiler out there that&#x27;d be able to e.g. optimize (logand 1 (the even-element x)) into the constant 0. Thus declaring types like this -- in Common Lisp at least -- is only really useful for documenting code and run-time validation.",
+    "time": 1707175076,
+    "type": "comment"
+  },
+  "39267520": {
+    "by": "richie_adler",
+    "id": 39267520,
+    "parent": 39266762,
+    "text": "Pascal can also do this.",
+    "time": 1707168774,
+    "type": "comment"
+  },
+  "39278896": {
+    "by": "uecker",
+    "id": 39278896,
+    "parent": 39266741,
+    "text": "I am not sure I follow. unsigned types in C are residues and not binary polynoms or Galois fields (also you can of course store them in unsigned integers).<p>The conversions work, e.g. conversion to a smaller unsigned type are reduced. That some other conversion work does seem convenient to me and not a problem.<p>One can, of course, define types in C for Galois fields and access them using functions that do the correct operations (and by wrapping it in a struct one can also prevent regular operations to be used on such type). In C++ one can overload the builtin operators, but I am not terrible sure this is even a good idea.",
+    "time": 1707246106,
+    "type": "comment"
+  },
+  "39268063": {
+    "by": "n_plus_1_acc",
+    "id": 39268063,
+    "parent": 39266741,
+    "text": "Very interesting thoughts. I have also seen one programming languages, ehich I cannot find anymore, which doesn&#x27;t differentiate between signed and unsigned integers as types. Instead, there are just various sized integers, and for each operation you must choose between signed and unsigned semantics. Kind of like Javas &gt;&gt;&gt; and unsignedToString.",
+    "time": 1707171734,
+    "type": "comment"
+  },
+  "39266514": {
+    "by": "wongarsu",
+    "id": 39266514,
+    "kids": [
+      39272385,
+      39267017
+    ],
+    "parent": 39266242,
+    "text": "It takes two lines in your Cargo.toml to turn overflows into panics in release mode in rust, if you don&#x27;t mind the performance hit.<p>Or more sensibly you can set clippy lints to disallow any operation that may overflow, forcing you to specify the desired behavior (either with the .{wrapping,checking,saturating}_{sub,add,mul,div} functions or the Saturating&lt;Type&gt; etc wrappers)",
+    "time": 1707164228,
+    "type": "comment"
+  },
+  "39266054": {
+    "by": "jstimpfle",
+    "id": 39266054,
+    "parent": 39265490,
+    "text": "I mean, yeah. It&#x27;s not like there is a lot of meaning to NaN. For most applications, trying to sort NaNs is probably a bug in itself. So I think this is likely a perfectly valid comparison function.<p>To make a point, here is a sorting function I&#x27;m using.<p><pre><code>    static int cmp_seqnos(const void *a, const void *b)\n    {\n        uint64_t x = (const uint64_t *) a;\n        uint64_t y = (const uint64_t *) b;\n        if (y - x &lt; ((uint64_t) 1 &lt;&lt; 63))\n            return -1;\n        return x != y;\n    }\n</code></pre>\nI think this should work if there are uint64_t a, b: b - a &lt; ((uint64_t) 1 &lt;&lt; 63) and all values x from the set to be sorted are in the range a..b. Note that a &lt; b isn&#x27;t a requirement here.<p>Sorting such numbers can be useful when dealing with sliding windows.",
+    "time": 1707162259,
+    "type": "comment"
+  },
+  "39265156": {
+    "by": "anonymoushn",
+    "id": 39265156,
+    "kids": [
+      39266103
+    ],
+    "parent": 39265064,
+    "text": "the glibc qsort function is already something you only use if you don&#x27;t care about performance.",
+    "time": 1707158826,
+    "type": "comment"
+  },
+  "39275995": {
+    "by": "SAI_Peregrinus",
+    "id": 39275995,
+    "parent": 39265064,
+    "text": "ARM Morello does that check in hardware.",
+    "time": 1707235830,
+    "type": "comment"
+  },
+  "39268921": {
+    "by": "ericdfoley",
+    "id": 39268921,
+    "kids": [
+      39268944
+    ],
+    "parent": 39268901,
+    "text": "Seg faults",
+    "time": 1707177639,
+    "type": "comment"
+  },
+  "39265917": {
+    "by": "hedora",
+    "id": 39265917,
+    "parent": 39265231,
+    "text": "It can&#x27;t lead to an out of bounds write, but it could violate higher-level invariants in the Java program, and those could be exploitable.<p>For instance, the bad comparator could be used in nested authentication checks:<p>if check_A { drop privilege to FOO } else if check_B { drop privilege to BAR } else { &#x2F;* leave root bit set, because &quot;not (A or B)&quot; means root *&#x2F; }<p>and it could lead to a privilege escalation in the face of malformed inputs.<p>I&#x27;ve seen this sort of thing happen in the wild with Java.",
+    "time": 1707161735,
+    "type": "comment"
+  },
+  "39266244": {
+    "by": "int_19h",
+    "id": 39266244,
+    "kids": [
+      39266323
+    ],
+    "parent": 39265602,
+    "text": "In ISO C17, 7.2.5&#x2F;4 has the relevant verbiage:<p>&quot;When the same objects (consisting of size bytes, irrespective of their current positions in the array) are passed more than once to the comparison function, the results shall be consistent with one another. That is, for qsort they shall define a total ordering on the array, and for bsearch the same object shall always compare the same way with the key.&quot;",
+    "time": 1707163077,
+    "type": "comment"
+  },
+  "39265402": {
+    "by": "debugnik",
+    "id": 39265402,
+    "kids": [
+      39265597
+    ],
+    "parent": 39265201,
+    "text": "But being footguns is a feature of C&#x2F;C++, not a defect: they trade safety for performance by design. (Edit: Wrong trade-off in my opinion, just to make it clear.)<p>If you shop specifically for an unsafe tool, surprise, you get one. Should have picked better.",
+    "time": 1707159676,
+    "type": "comment"
+  },
+  "39265380": {
+    "by": "nequo",
+    "id": 39265380,
+    "parent": 39265201,
+    "text": "This one is not on GNU libc then but on ISO C and POSIX because they manufactured this particular footgun.",
+    "time": 1707159598,
+    "type": "comment"
+  },
+  "39268343": {
+    "by": "nequo",
+    "id": 39268343,
+    "kids": [
+      39273538
+    ],
+    "parent": 39267519,
+    "text": "Dynamic linking is something that I would personally like to see in Rustland too.<p>But parent&#x27;s point is that some issues that count as a CVE for Rust do not count as such for C&#x2F;C++ because the boundaries of undefined behavior are drawn elsewhere. This means that there are many fixes that are simply never made for C&#x2F;C++, even though dynamic linking would make such a counterfactual fix easier to deploy.",
+    "time": 1707173601,
+    "type": "comment"
+  },
+  "39275121": {
+    "by": "bregma",
+    "id": 39275121,
+    "parent": 39267132,
+    "text": "Code was added to libc++ and libstdc++ to avoid the TOCTOU exploit documented in the CVE. &quot;Fixed&quot; in this case means the source code for the library was modified to prevent the documented exploit, and test cases were added to their test suites to exercise the code.<p>Not sure about the Microsoft C++ standard library since the Microsoft Windows system API does not provide the same softlink functionalty.",
+    "time": 1707232787,
+    "type": "comment"
+  },
+  "39267910": {
+    "by": "AnthonyMouse",
+    "id": 39267910,
+    "parent": 39266997,
+    "text": "What I&#x27;d like to see is a different scoring system that measures how much attention I have to pay to something.<p>Score 1: This is an implementation bug in the library. Update the library and you&#x27;re done. It doesn&#x27;t matter that this gives remote root on a machine with no services running, all you have to worry about is to install the patch and it&#x27;s 100% fixed.<p>Score 2: This is a vulnerability discovered in multiple implementations. Some of them have fixed it and some of them haven&#x27;t. Here is the list of known-good implementations, you need to check that the one you&#x27;re using is on the list and if it isn&#x27;t then switch to one of the ones that is.<p>Score 3: This is a flaw which some platforms don&#x27;t currently provide a means to implement securely for any implementation. You need to pay attention to this if you use those platforms and possibly redesign your applications to do something else there.<p>Score 4: This is a design flaw in the API. We can&#x27;t fix it without breaking compatibility so here&#x27;s a new API and now you definitely have to update your applications to use it and the existing ones will continue to be vulnerable. Compilers should emit a deprecation warning for anything still using the old API.<p>Score 5: Spectre. We kind of mitigated it some and you need some patches but now you have to review <i>all</i> existing code, probably won&#x27;t catch it all anyway, people will continue finding new variants for years and we&#x27;re all totally screwed.",
+    "time": 1707170804,
+    "type": "comment"
+  },
+  "39266948": {
+    "by": "trealira",
+    "id": 39266948,
+    "kids": [
+      39268033
+    ],
+    "parent": 39265833,
+    "text": "&gt; For example, the chain of exploits that have been used to gain complete remote control of any iPhone without detection during many years has included some that were based on integer overflows in the Apple system software.<p>For those interested, I found a blog post that covers an iMessage-based zero-click exploit, which was caused by unchecked integer overflow, and a lack of bounds checking done on allocated buffers:<p><a href=\"https:&#x2F;&#x2F;googleprojectzero.blogspot.com&#x2F;2021&#x2F;12&#x2F;a-deep-dive-into-nso-zero-click.html\" rel=\"nofollow\">https:&#x2F;&#x2F;googleprojectzero.blogspot.com&#x2F;2021&#x2F;12&#x2F;a-deep-dive-i...</a>",
+    "time": 1707166139,
+    "type": "comment"
+  },
+  "39267684": {
+    "by": "jcranmer",
+    "id": 39267684,
+    "kids": [
+      39271542,
+      39274042
+    ],
+    "parent": 39267155,
+    "text": "Not necessarily the only proper solution--hard failure, like array out-of-bounds errors, is also often an acceptable solution.",
+    "time": 1707169560,
+    "type": "comment"
+  },
+  "39269063": {
+    "by": "moonchild",
+    "id": 39269063,
+    "parent": 39268554,
+    "text": "Extant cl compilers are quite primitive.  Well known and uncomplicated analyses exist that can cope with this; e.g. in llvm <a href=\"https:&#x2F;&#x2F;godbolt.org&#x2F;z&#x2F;nadbG5zGs\" rel=\"nofollow\">https:&#x2F;&#x2F;godbolt.org&#x2F;z&#x2F;nadbG5zGs</a>",
+    "time": 1707178517,
+    "type": "comment"
+  },
+  "39272385": {
+    "by": "int_19h",
+    "id": 39272385,
+    "parent": 39266514,
+    "text": "Similarly, with C#, you can compile with exception-on-overflow for integers. This is all great, but this should really be the default behavior for basic arithmetic operators, even in release builds. For cases where you want overflow (or saturation, or UB) there should really be distinct operators. Maybe something like &lt;+&gt; for wraparound, [+] for saturation etc.",
+    "time": 1707210416,
+    "type": "comment"
+  },
+  "39267017": {
+    "by": "avgcorrection",
+    "id": 39267017,
+    "parent": 39266514,
+    "text": "Okay thanks.",
+    "time": 1707166491,
+    "type": "comment"
+  },
+  "39266103": {
+    "by": "sureglymop",
+    "id": 39266103,
+    "kids": [
+      39268168,
+      39275084
+    ],
+    "parent": 39265156,
+    "text": "Then what is a better alternative? I was always told that I shouldn&#x27;t implement something as trivial as sorting algorithms by myself...",
+    "time": 1707162490,
+    "type": "comment"
+  },
+  "39268944": {
+    "by": "vitiral",
+    "id": 39268944,
+    "parent": 39268921,
+    "text": "so... you&#x27;re saying you&#x27;ve hit this exact bug before? I bet that was a fun debug session!",
+    "time": 1707177772,
+    "type": "comment"
+  },
+  "39266323": {
+    "by": "skitter",
+    "id": 39266323,
+    "parent": 39266244,
+    "text": "Thanks! So it is&#x2F;was indeed UB.",
+    "time": 1707163356,
+    "type": "comment"
+  },
+  "39265597": {
+    "by": "dralley",
+    "id": 39265597,
+    "kids": [
+      39266218
+    ],
+    "parent": 39265402,
+    "text": "1) The performance saved is negligible in many cases, for most footguns.  Sometimes it&#x27;s of no benefit, or slower than safe solutions to the same problem.<p>2) There&#x27;s no reason to not just have the footgun be opt-in rather than it being the default approach, if performance does matter so much<p>3) Why is trading safety for performance the right decision in the first place? It&#x27;s funny to compare the way software engineers talk about software with the way any other kind of engineer talks about their domain, or even how software engineers talk about other domains.<p>How many threads have been had here over the past month about how unacceptable Boeing&#x27;s &quot;just turn off the de-icer&quot; is to a hardware problem that could damage the engine, and other dodgy engineering decisions?",
+    "time": 1707160420,
+    "type": "comment"
+  },
+  "39273538": {
+    "by": "megous",
+    "id": 39273538,
+    "kids": [
+      39274480,
+      39278170
+    ],
+    "parent": 39268343,
+    "text": "Parent point was that such CVE could be fixed in Rust super cheaply (free) because code is maintained.<p>If I have to reinstall the whole system to fix CVE in Rust stdlib in a brave new world where everything is written in Rust, then it&#x27;s certainly not free fix.",
+    "time": 1707222948,
+    "type": "comment"
+  },
+  "39268033": {
+    "by": "tialaramex",
+    "id": 39268033,
+    "kids": [
+      39269681
+    ],
+    "parent": 39266948,
+    "text": "If you wrote this code as Rust, the resulting bounds miss traps and the exploit doesn&#x27;t work (but the messaging application fails which is pretty annoying)<p>If you wrote this code in WUFFS it won&#x27;t compile.",
+    "time": 1707171546,
+    "type": "comment"
+  },
+  "39271542": {
+    "by": "jacquesm",
+    "id": 39271542,
+    "parent": 39267684,
+    "text": "That highly depends on the execution environment. In Erlang for instance that would be an acceptable solution. But most other environments don&#x27;t deal nearly as gracefully with runtime errors.",
+    "time": 1707202479,
+    "type": "comment"
+  },
+  "39274042": {
+    "by": "rsaxvc",
+    "id": 39274042,
+    "parent": 39267684,
+    "text": "MIPS on GCC defaulted to trapping integer overflows, but they had non trapping instructions too.",
+    "time": 1707226738,
+    "type": "comment"
+  },
+  "39268168": {
+    "by": "tokedo",
+    "id": 39268168,
+    "parent": 39266103,
+    "text": "A simple solution is to create a C++ file and exposing sorting functions to C. E.g. &quot;void sort_int(int *data, size_t n)&quot;. The implementation uses then std::sort.<p>Unfortunately, qsort is really slow and sometimes barely usable.",
+    "time": 1707172454,
+    "type": "comment"
+  },
+  "39275084": {
+    "by": "CyberDildonics",
+    "id": 39275084,
+    "parent": 39266103,
+    "text": "You were told correctly, but there is a lot of room between using the C standard library and making your own sort. C++ STL std::sort is one, but the internet is filled with libraries you can download, of course you can find a better alternative with a search.",
+    "time": 1707232647,
+    "type": "comment"
+  },
+  "39266218": {
+    "by": "debugnik",
+    "id": 39266218,
+    "parent": 39265597,
+    "text": "You may have misread my comment, I&#x27;m on safe languages team.<p>I&#x27;m complaining about the people that start projects in unsafe languages in exchange of a thin performance boost, and then blame the compiler&#x2F;runtime maintainers for their own code being unsafe in exactly the ways the spec says it can be unsafe to give them such an extra boost.<p>Personally, I think all remaining C and C++ projects should consider either rewriting in a safer language or adopting additional tools to <i>prove</i> (not just test) the lack of undefined behaviour. Trying to compromise is just giving us memory safety CVEs one after another.",
+    "time": 1707162980,
+    "type": "comment"
+  },
+  "39274480": {
+    "by": "nequo",
+    "id": 39274480,
+    "parent": 39273538,
+    "text": "I actually think you&#x27;re right. Apologies. I also don&#x27;t see deploying a glibc fix as particularly costly.",
+    "time": 1707229510,
+    "type": "comment"
+  },
+  "39278170": {
+    "by": "jacquesm",
+    "id": 39278170,
+    "parent": 39273538,
+    "text": "But we don&#x27;t live in that brave new world and we&#x27;re talking about <i>now</i>, not some hypothetical.",
+    "time": 1707243514,
+    "type": "comment"
+  },
+  "39269681": {
+    "by": "trealira",
+    "id": 39269681,
+    "parent": 39268033,
+    "text": "Interesting, I hadn&#x27;t heard of WUFFS before now. Thanks for telling me about it.",
+    "time": 1707183348,
+    "type": "comment"
+  }
+}
